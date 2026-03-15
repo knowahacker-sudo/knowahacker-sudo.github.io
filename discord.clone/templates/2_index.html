@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Discord Login{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <h1 class="fade-in">Log in to Discord</h1>
+    <form id="loginForm">
+        <input type="email" placeholder="Email" id="email" required class="slide-in">
+        <input type="password" placeholder="Password" id="password" required class="slide-in delay-1">
+        <button type="submit" class="bounce">Login</button>
+    </form>
+</div>
+{% endblock %}
